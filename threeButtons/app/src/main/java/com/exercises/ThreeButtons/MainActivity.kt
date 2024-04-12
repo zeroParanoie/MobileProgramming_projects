@@ -2,8 +2,10 @@ package com.exercises.ThreeButtons
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -24,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.exercises.ThreeButtons.ui.theme.ThreeButtonsTheme
@@ -44,6 +48,25 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ThreeButtons() {
+    var text by rememberSaveable { mutableStateOf("Hi android!") }
+    var state by rememberSaveable { mutableIntStateOf(1) }
+    var color by rememberSaveable { mutableIntStateOf(Color.White.toArgb()) }
+    var textColor by rememberSaveable { mutableIntStateOf(Color.White.toArgb()) }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (state == 1) {
+            Activity1(text, textColor) {
+                color = it.toArgb()
+                state = 2
+            }
+        } else {
+            Activity2(text, color) { t,c ->
+                text = t
+                if (c != -1)
+                    textColor = c
+                state = 1
+            }
+        }
+    }
 }
 
 @Composable
@@ -68,10 +91,21 @@ fun Activity1(text: String,
 @Composable
 fun Activity2(text: String,
               color: Int,
-              onclick: (color: Color) -> Unit) {
+              onclick: (text: String, color: Int) -> Unit) {
     var value by rememberSaveable { mutableStateOf(text) }
-    Row {
-
+    BackHandler {
+        onclick(text, -1)
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+       TextField(value = value, onValueChange = {value = it},
+           label = { Text(text = "your text here")})
+       MyButton(color = Color(color), text = "OK") {
+           onclick(value, color)
+       }
     }
 }
 
